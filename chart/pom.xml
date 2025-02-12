@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>maven-helm</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <docker.image.name>your-app</docker.image.name>
+        <aws.ecr.repository>your-ecr-repo</aws.ecr.repository>
+        <aws.account.id>123456789012</aws.account.id>
+        <aws.region>us-east-1</aws.region>
+        <helm.repository>oci://${aws.account.id}.dkr.ecr.${aws.region}.amazonaws.com/helm-charts</helm.repository>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>io.kokuwa.maven</groupId>
+            <artifactId>helm-maven-plugin</artifactId>
+            <version>6.17.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+            <!-- Helm Maven Plugin for packaging & pushing Helm chart -->
+            <plugin>
+                <groupId>io.kokuwa.maven</groupId>
+                <artifactId>helm-maven-plugin</artifactId>
+                <version>6.17.0</version>
+                <configuration>
+                    <chartDirectory>${project.basedir}</chartDirectory>
+                    <chartVersion>${project.version}</chartVersion>
+                    <useLocalHelmBinary>true</useLocalHelmBinary>
+                    <addDefaultRepo>false</addDefaultRepo>
+                    <helmDownloadUrl>https://get.helm.sh/helm-v3.8.1-linux-amd64.tar.gz</helmDownloadUrl>
+                    <!-- This is the related section to configure upload repos -->
+                    <uploadRepoStable>
+                        <name>stable-repo</name>
+                        <url>https://repo.example.com/artifactory/helm-stable</url>
+                        <type>ARTIFACTORY</type>
+                    </uploadRepoStable>
+                    <uploadRepoSnapshot>
+                        <name>snapshot-repo</name>
+                        <url>https://my.chart.museum:8080/api/charts</url>
+                        <type>CHARTMUSEUM</type>
+                    </uploadRepoSnapshot>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>helm-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>helm-push</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>push</goal>
+                        </goals>
+                    </execution>
+                </executions>
+<!--                <configuration>-->
+<!--                    <repository>${helm.repository}</repository>-->
+<!--                    <oci>true</oci>-->
+<!--                </configuration>-->
+            </plugin>
+        </plugins>
+    </build>
+</project>

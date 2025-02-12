@@ -1,0 +1,66 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>maven-docker</artifactId>
+    <version>1.0.0</version>
+
+    <properties>
+        <docker.image.name>your-app</docker.image.name>
+        <aws.ecr.repository>your-ecr-repo</aws.ecr.repository>
+        <aws.account.id>XXXXXX</aws.account.id>
+        <aws.region>us-west-2</aws.region>
+        <helm.repository>oci://${aws.account.id}.dkr.ecr.${aws.region}.amazonaws.com/helm-charts</helm.repository>
+    </properties>
+<!--    733580349929.dkr.ecr.us-west-2.amazonaws.com/aws-ansible:latest-->
+    <build>
+        <plugins>
+<!--             Docker Maven Plugin for building & pushing Docker images-->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.45.1</version>
+                <executions>
+                    <execution>
+                        <id>build-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>tag</goal>
+                            <goal>push</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${aws.account.id}.dkr.ecr.${aws.region}.amazonaws.com/${aws.ecr.repository}:${project.version}</name>
+                            <build>
+                                <from>${aws.account.id}.dkr.ecr.us-west-2.amazonaws.com/aws-ansible:latest</from>
+                                <maintainer>tester</maintainer>
+<!--                                <dockerFile>Dockerfile</dockerFile>-->
+                                <tags>
+                                    <tag>latest</tag>
+                                    <tag>${project.version}</tag>
+                                </tags>
+                            </build>
+
+                        </image>
+                    </images>
+                    <registry>${aws.account.id}.dkr.ecr.us-west-2.amazonaws.com</registry>
+<!--                    <authConfig>-->
+<!--                        <username>AWS</username>-->
+<!--                        <password>-->
+<!--                            <exec>-->
+<!--                                <command>aws ecr get-login-password &#45;&#45;region ${aws.region}</command>-->
+<!--                            </exec>-->
+<!--                        </password>-->
+<!--                    </authConfig>-->
+
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
